@@ -4,9 +4,10 @@ import subprocess
 import SimpleITK as sitk
 import numpy as np
 
+from utils.gzip_check import check
 from utils.separate_if_sacrum import separate 
 from dice_score.ds_ts import compute_dice_per_label, dice_score, extract_label
-
+from utils.mha2nifti import mha_to_nifti as m2n
 def run_total_segmentator(input_img, output_folder):
     print("Running TotalSegmentator...")
     cmd = [
@@ -22,6 +23,15 @@ def run_total_segmentator(input_img, output_folder):
 def main(args):
     seg_output_folder = os.path.join(args.work_dir, "segmentation_output")
     os.makedirs(seg_output_folder, exist_ok=True)
+    
+    #check if mha
+    if args.image.endswith(".mha"):
+        # Convert .mha to .nii.gz
+        m2n(args.image, seg_output_folder)
+        args.image = os.path.join(seg_output_folder, os.path.basename(args.image).replace(".mha", ".nii.gz"))
+    
+    #check if the gzip is actually a gzip file
+    check(args.image)
 
     # Step 1: TotalSegmentator
     run_total_segmentator(args.image, seg_output_folder)
@@ -58,4 +68,4 @@ if __name__ == "__main__":
 
 
 
-# python -m main.TS_pipeline --image /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID04/Philips_Achieva/Images/Dixon_T2.nii.gz --ground_truth /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID04/Philips_Achieva/Labels --work_dir /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID04/Philips_Achieva/seg
+# python -m main.TS_pipeline --image /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID02/Philips_Achieva/Images/Dixon_T2.nii.gz --ground_truth /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID02/Philips_Achieva/Labels --work_dir /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID02/Philips_Achieva/seg

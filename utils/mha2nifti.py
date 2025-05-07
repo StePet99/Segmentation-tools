@@ -13,7 +13,7 @@ def split_filename(filepath):
     return path, base, ext
 
 # Convert .mha files to .nii.gz format
-def convert_folder_mha_to_nifti(input_dir, output_dir):
+def mha_to_nifti(input_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     mha_files = glob(os.path.join(input_dir, '*.mha'))
