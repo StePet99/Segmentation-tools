@@ -1,12 +1,10 @@
 import argparse
 import os
 import subprocess
-import SimpleITK as sitk
-import numpy as np
 
 from utils.gzip_check import check
 from utils.separate_if_sacrum import separate 
-from dice_score.ds_ts import compute_dice_per_label, dice_score, extract_label
+from dice_score.ds_ts import compute_dice_per_label
 from utils.mha2nifti import mha_to_nifti as m2n
 def run_total_segmentator(input_img, output_folder):
     print("Running TotalSegmentator...")
@@ -39,21 +37,22 @@ def main(args):
     labeled_discs_path = os.path.join(args.work_dir, "labeled_discs.nii.gz")
 
     # Step 2: Label discs
-    # Define the mapping of labels to their corresponding values
+    disc_labels = ["L5-Sacrum", "L4-L5", "L3-L4", "L2-L3", "L1-L2", "T12-L1", "T11-T12", "T10-T11", "T9-T10", "T8-T9", "T7-T8", "T6-T7", "T5-T6", "T4-T5", "T3-T4", "T2-T3", "T1-T2"]
+
+    separate(disc_mask_path, labeled_discs_path, label_txt_path, disc_labels=disc_labels)
+
+    output_csv = os.path.join(args.work_dir, "dice_scores.csv")
+     
+     # Define the mapping of labels to their corresponding values
+     ## Specific for the OSF dataset. Change if needed.
     label_mapping = {
         "BS_L1_2": 5,
         "BS_L2_3": 4,
         "BS_L3_4": 3,
         "BS_L4_5": 2
     }
-    disc_labels = ["L5-Sacrum", "L4-L5", "L3-L4", "L2-L3", "L1-L2", "T12-L1", "T11-T12", "T10-T11", "T9-T10", "T8-T9", "T7-T8", "T6-T7", "T5-T6", "T4-T5", "T3-T4", "T2-T3", "T1-T2"]
-
-    separate(disc_mask_path, labeled_discs_path, label_txt_path, disc_labels=disc_labels)
-
-    output_txt = os.path.join(args.work_dir, "dice_scores.csv")
-
     # Step 3: DICE computation
-    dice_scores = compute_dice_per_label( args.ground_truth, labeled_discs_path, label_mapping, output_txt)
+    dice_scores = compute_dice_per_label( args.ground_truth, labeled_discs_path, label_mapping, output_csv)
 
 
 if __name__ == "__main__":
@@ -65,7 +64,3 @@ if __name__ == "__main__":
     label_txt_path = os.path.join(args.work_dir, "label_txt_path_labels.txt")
     
     main(args)
-
-
-
-# python -m main.TS_pipeline --image /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID02/Philips_Achieva/Images/Dixon_T2.nii.gz --ground_truth /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID02/Philips_Achieva/Labels --work_dir /Users/stefanopetraccini/Desktop/Datasets/osfstorage-archive/ID02/Philips_Achieva/seg
