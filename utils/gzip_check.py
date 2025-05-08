@@ -2,7 +2,7 @@ import gzip
 import shutil
 import os
 
-def check(file_path):
+def check_and_fix_gzip(file_path):
     """
     Ensure that a .nii.gz file is a valid gzip. If not, recompress it properly.
     """

@@ -2,10 +2,11 @@ import argparse
 import os
 import subprocess
 
-from utils.gzip_check import check
+from utils.gzip_check import check_and_fix_gzip as check
 from utils.separate_if_sacrum import separate 
 from dice_score.ds_ts import compute_dice_per_label
 from utils.mha2nifti import mha_to_nifti as m2n
+
 def run_total_segmentator(input_img, output_folder):
     print("Running TotalSegmentator...")
     cmd = [
@@ -28,7 +29,7 @@ def main(args):
         m2n(args.image, seg_output_folder)
         args.image = os.path.join(seg_output_folder, os.path.basename(args.image).replace(".mha", ".nii.gz"))
     
-    #check if the gzip is actually a gzip file
+    #check if the gzip is actually a gzip file, if not fix it.
     check(args.image)
 
     # Step 1: TotalSegmentator
@@ -52,7 +53,7 @@ def main(args):
         "BS_L4_5": 2
     }
     # Step 3: DICE computation
-    dice_scores = compute_dice_per_label( args.ground_truth, labeled_discs_path, label_mapping, output_csv)
+    compute_dice_per_label( args.ground_truth, labeled_discs_path, label_mapping, output_csv)
 
 
 if __name__ == "__main__":
